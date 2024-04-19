@@ -1,16 +1,37 @@
 'use client' // client component
 
-import { useState } from 'react';
-import Image from 'next/image';
+import { useState, useRef } from 'react';
+import { auth } from '../firebaseConfig'; 
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function Home() {
   const [isSignUp, setIsSignUp] = useState(false); // Toggle between Sign In and Sign Up
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Here you would handle form submission for Sign In or Sign Up
-    // This could involve calling Firebase authentication methods
-    console.log('Form submitted!');
+    const email = emailRef.current?.value;
+    const password = passwordRef.current?.value;
+    const confirmPassword = confirmPasswordRef.current?.value;
+
+    if (isSignUp && password !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    try {
+      if (isSignUp) {
+        await createUserWithEmailAndPassword(auth, email!, password!);
+        alert("Signup successful!");
+      } else {
+        await signInWithEmailAndPassword(auth, email!, password!);
+        alert("Sign in successful!");
+      }
+    } catch (error: any) {
+        alert(error.message);
+    }
   };
 
   return (
@@ -26,6 +47,7 @@ export default function Home() {
             <input
               type="email"
               id="email"
+              ref={emailRef}
               required
               className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
             />
@@ -37,6 +59,7 @@ export default function Home() {
             <input
               type="password"
               id="password"
+              ref={passwordRef}
               required
               className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
             />
@@ -49,6 +72,7 @@ export default function Home() {
               <input
                 type="password"
                 id="confirm-password"
+                ref={confirmPasswordRef}
                 required={isSignUp}
                 className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
               />
