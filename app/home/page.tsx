@@ -14,7 +14,7 @@ const sendMessage = (chatId: string, message: string) => {
   console.log(`Sending message to chat ${chatId}: ${message}`);
 };
 
-export default function home() {
+export default function Home() {
   const router = useRouter();
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
 
