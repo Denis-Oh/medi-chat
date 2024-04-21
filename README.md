@@ -24,3 +24,11 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see Medi-Chat.
 
+<br>
+
+## Tech Stack
+- Next.js
+- React
+- Tailwind
+- Firebase Authentication
+- Firestore Database
