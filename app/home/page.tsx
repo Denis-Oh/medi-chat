@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from '../../firebaseConfig';
+import { auth } from '@/firebaseConfig';
 import { signOut } from 'firebase/auth';
-import ChatList from '../../components/chatList';
+import ChatList from '@/components/chatList';
+import ChatWindow from '@/components/chatWindow';
+import MessageInput from '@/components/messageInput';
 
 // Send message to database
 const sendMessage = (chatId: string, message: string) => {
@@ -47,8 +49,8 @@ export default function home() {
       <main className="flex-1 flex flex-col">
         {currentChatId ? (
           <>
-            {/* <ChatWindow chatId={currentChatId} /> */}
-            {/* <MessageInput onSendMessage={(message) => sendMessage(currentChatId, message)} /> */}
+            <ChatWindow chatId={currentChatId} />
+            <MessageInput onSendMessage={(message) => sendMessage(currentChatId, message)} />
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center">
