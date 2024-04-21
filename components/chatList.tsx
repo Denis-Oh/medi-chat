@@ -1,4 +1,6 @@
-import React, { FormEvent, useState } from 'react';
+import React, { FormEvent, useEffect, useState } from 'react';
+import { getFirestore, collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
+import { auth } from '@/firebaseConfig';
 
 // Define the expected type for the onSelectChat prop
 interface ChatListProps {
@@ -7,19 +9,68 @@ interface ChatListProps {
 
 const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   const [newContactEmail, setNewContactEmail] = useState("");
-  const chats = [
-    { id: 'chat1', name: 'Chat with Dr. Smith' },
-    { id: 'chat2', name: 'Chat with Dr. Johnson' },
-  ]; // Example data
+  const [chats, setChats] = useState<{ id: string; name: string }[]>([]);
+  const db = getFirestore(); // Firestore instance
 
-  const handleNewContact = (e: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    // Fetch initial chats for the current user
+    const fetchChats = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const chatsQuery = query(
+          collection(db, 'chats'),
+          where('participants', 'array-contains', currentUser.uid) // participants is an array of user IDs
+        );
+        const chatDocs = await getDocs(chatsQuery);
+        const fetchedChats = chatDocs.docs.map(doc => ({ 
+          id: doc.id, 
+          name: doc.data().chatName || `Chat ${doc.id}`,
+        }));
+        setChats(fetchedChats);
+      }
+    };
+
+    fetchChats(); // Fetch the initial list of chats
+  }, []);
+
+  const handleNewContact = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newContactEmail.trim()) {
+      const usersQuery = query(
+        collection(db, 'users'),
+        where('email', '==', newContactEmail.trim())
+      );
 
-      // TODO: New Contact
+      const userDocs = await getDocs(usersQuery);
 
-      console.log(`New contact added: ${newContactEmail}`);
-      setNewContactEmail('');
+      if (!userDocs.empty) {
+        const currentUser = auth.currentUser;
+
+        if (currentUser) {
+          // Get participant usernames
+          const participants = [currentUser.uid, userDocs.docs[0].id];
+          const usernames = await Promise.all(
+            participants.map(async (userId) => {
+              const userDocRef = doc(collection(db, 'users'), userId);
+              const userDoc = await getDoc(userDocRef);
+              return userDoc.data()?.username || 'Unknown User';
+            })
+          );
+
+          const chatName = `Chat with: ${usernames.join(', ')}`; // Generate the chat name
+
+          const newChatDoc = await addDoc(collection(db, 'chats'), {
+            participants,
+            createdAt: new Date(),
+            chatName, // Store the chat name
+          });
+
+          setChats([...chats, { id: newChatDoc.id, name: chatName }]); // Update the chat list with the new chat
+          setNewContactEmail(''); // Clear the input field
+        }
+      } else {
+        alert("User not found. Please ensure the email is correct."); // Handle user not found
+      }
     }
   };
 
@@ -39,7 +90,6 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
 
       <h2 className="text-lg font-bold p-4">Chats</h2>
       <ul className="list-none">
-
         {chats.map((chat) => (
           <li
             key={chat.id}

@@ -1,22 +1,25 @@
-'use client' // client component
+'use client'; // client component
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-
-import { auth } from '../firebaseConfig'; 
+import { auth } from '../firebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, collection, setDoc, doc } from 'firebase/firestore';
 
 export default function Authentication() {
-  const [isSignUp, setIsSignUp] = useState(false); // Toggle between Sign In and Sign Up
+  const [isSignUp, setIsSignUp] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
+  const usernameRef = useRef<HTMLInputElement>(null); 
   const router = useRouter();
+  const db = getFirestore(); // Firestore instance
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
+    const username = usernameRef.current?.value;
     const confirmPassword = confirmPasswordRef.current?.value;
 
     if (isSignUp && password !== confirmPassword) {
@@ -26,16 +29,25 @@ export default function Authentication() {
 
     try {
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email!, password!);
+        const userCredential = await createUserWithEmailAndPassword(auth, email!, password!); // Create user
+        const user = userCredential.user;
+
+        // Create a new document in the users collection
+        await setDoc(doc(collection(db, 'users'), user.uid), {
+          email,
+          username, 
+          createdAt: new Date(), 
+        });
+
         alert("Signup successful!");
-        router.push('/home');
+        router.push('/home'); // Redirect to home page
       } else {
         await signInWithEmailAndPassword(auth, email!, password!);
         alert("Sign in successful!");
-        router.push('/home');
+        router.push('/home'); // Redirect to home page
       }
     } catch (error: any) {
-        alert(error.message);
+      alert(error.message);
     }
   };
 
@@ -45,13 +57,27 @@ export default function Authentication() {
         <h4 className="text-center text-2xl font-bold">MediChat</h4>
         <h2 className="text-center text-xl font-medium">{isSignUp ? 'Sign Up' : 'Sign In'}</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {isSignUp && (
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <input
+                type="text"
+                id="username"
+                ref={usernameRef}
+                required
+                className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                placeholder="Choose a username"
+              />
+            </div>
+          )}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email
             </label>
             <input
               type="email"
-              id="email"
               ref={emailRef}
               required
               className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
@@ -63,7 +89,6 @@ export default function Authentication() {
             </label>
             <input
               type="password"
-              id="password"
               ref={passwordRef}
               required
               className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
@@ -76,7 +101,6 @@ export default function Authentication() {
               </label>
               <input
                 type="password"
-                id="confirm-password"
                 ref={confirmPasswordRef}
                 required={isSignUp}
                 className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
