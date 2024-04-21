@@ -1,14 +1,17 @@
 'use client' // client component
 
 import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+
 import { auth } from '../firebaseConfig'; 
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
-export default function Home() {
+export default function Authentication() {
   const [isSignUp, setIsSignUp] = useState(false); // Toggle between Sign In and Sign Up
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -25,9 +28,11 @@ export default function Home() {
       if (isSignUp) {
         await createUserWithEmailAndPassword(auth, email!, password!);
         alert("Signup successful!");
+        router.push('/home');
       } else {
         await signInWithEmailAndPassword(auth, email!, password!);
         alert("Sign in successful!");
+        router.push('/home');
       }
     } catch (error: any) {
         alert(error.message);
@@ -35,7 +40,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 text-black">
       <div className="w-full max-w-md p-8 space-y-6 bg-white shadow-md rounded-xl">
         <h4 className="text-center text-2xl font-bold">MediChat</h4>
         <h2 className="text-center text-xl font-medium">{isSignUp ? 'Sign Up' : 'Sign In'}</h2>

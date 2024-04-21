@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBVbMDxm4Hw_3iXY8_lYv9QPMugh_n-bJ0",
@@ -19,6 +19,16 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const auth = getAuth(app);
-const analytics = getAnalytics(app);
+// const analytics = getAnalytics(app);
 
-export { db, storage, auth };
+let analytics;
+if (typeof window !== 'undefined') {
+  // Only initialize analytics if it's supported and window is defined
+  isSupported().then((isSupported) => {
+    if (isSupported) {
+      analytics = getAnalytics(app);
+    }
+  });
+}
+
+export { app, db, storage, auth, analytics };
