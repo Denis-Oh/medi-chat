@@ -50,7 +50,7 @@ export default function home() {
         {currentChatId ? (
           <>
             <ChatWindow chatId={currentChatId} />
-            <MessageInput onSendMessage={(message) => sendMessage(currentChatId, message)} />
+            <MessageInput chatId={currentChatId} />
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center">

@@ -1,19 +1,52 @@
-import React, { FormEvent, useState } from 'react';
+import React, { FormEvent, useEffect, useState } from 'react';
+import { addDoc, collection, doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/firebaseConfig'; // Adjust import paths
 
-// Define the expected type for the onSendMessage prop
-interface messageInputProps {
-    onSendMessage: (chatId: string) => void;
-  }
-  
-// Props might include methods to send messages
-const MessageInput: React.FC<messageInputProps> = ({ onSendMessage }) => {
+interface MessageInputProps {
+  chatId: string; // Conversation Chat ID where messages will be sent
+}
+
+const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   const [message, setMessage] = useState('');
+  const [senderUsername, setSenderUsername] = useState('');
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    const fetchCurrentUserUsername = async () => {
+      const currentUser = auth.currentUser;
+
+      if(currentUser) {
+        const userDocRef = doc(db, `users/${currentUser.uid}`);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists() && userDoc.data()?.username) {
+          setSenderUsername(userDoc.data()?.username);
+        } else {
+          setSenderUsername('Unknown User');
+        }
+      }
+    };
+    fetchCurrentUserUsername();
+  }, []);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (message.trim()) {
-      onSendMessage(message);
-      setMessage('');
+    const currentUser = auth.currentUser;
+
+    if (message.trim() && currentUser) {
+      try {
+        // Add the new message to the 'messages' subcollection in the chat document
+        await addDoc(collection(db, `chats/${chatId}/messages`), {
+          text: message,
+          sender: currentUser.uid,
+          senderUsername,
+          timestamp: new Date(),
+        });
+
+        setMessage(''); // Clear input field
+
+      } catch (error: any) {
+        console.error("Error sending message:", error.message);
+      }
     }
   };
 
@@ -26,7 +59,7 @@ const MessageInput: React.FC<messageInputProps> = ({ onSendMessage }) => {
         className="w-full rounded p-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         placeholder="Type a message..."
       />
-      <button type="submit" className="hidden">Send</button>
+      <button type="submit" className="hidden">Send</button> {/* Hidden submit button for form submission */}
     </form>
   );
 };
