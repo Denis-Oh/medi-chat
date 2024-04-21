@@ -43,8 +43,16 @@ export default function home() {
 
   return (
     <div className="flex min-h-screen bg-gray-100 text-black">
-      <aside className="w-1/4 bg-white p-4">
-        <ChatList onSelectChat={selectChat} />
+      <aside className="relative w-1/4 bg-white p-4 flex flex-col">
+        <div className="overflow-auto flex-1"> {/* Allow scrolling */}
+          <ChatList onSelectChat={selectChat} />
+        </div>
+        <button
+          onClick={handleSignOut}
+          className="absolute bottom-0 left-0 w-full py-2 bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+        >
+          Sign Out
+        </button>
       </aside>
       <main className="flex-1 flex flex-col">
         {currentChatId ? (
@@ -57,12 +65,6 @@ export default function home() {
             <p>Select a chat to start messaging</p>
           </div>
         )}
-        <button
-          onClick={handleSignOut}
-          className="mt-auto w-full py-2 bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-        >
-          Sign Out
-        </button>
       </main>
     </div>
   );
