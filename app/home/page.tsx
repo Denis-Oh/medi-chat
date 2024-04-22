@@ -45,6 +45,18 @@ export default function Home() {
     fetchChatName(); // Fetch the chat name when currentChatId changes
   }, [currentChatId, db]); // Dependency array to rerun when currentChatId changes
 
+  useEffect(() => {
+    // sign out on page refresh
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      handleSignOut();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload); // Cleanup event listener
+
+    };
+  }, []);
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
