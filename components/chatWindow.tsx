@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { getFirestore, doc, getDoc, collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { auth } from '@/firebaseConfig';
 
@@ -17,9 +17,16 @@ interface Message {
 const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
   // const [chatName, setChatName] = useState(''); 
   const [messages, setMessages] = useState<Message[]>([]); 
-
+  const scrollRef = useRef<HTMLDivElement | null>(null); // Ref to most recent message
   const db = getFirestore(); // Firestore instance
   const currentUser = auth.currentUser;
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      scrollRef.current?.scrollIntoView({behavior: "smooth"});
+      console.log(`scrolling to: ${scrollRef}`);
+    }, 100);
+  };
 
   useEffect(() => {
     // Fetch the chat name and participants
@@ -60,6 +67,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
         }));
         
         setMessages(fetchedMessages);
+        scrollToBottom();
       });
     };
 
@@ -100,6 +108,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
             </div>
           );
         })}
+      <div ref={scrollRef} /> {/* Reference to bottom of screen */}
     </div>
   );
 };
