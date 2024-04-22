@@ -62,7 +62,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-gray-100 text-black"> 
-      <aside className="w-1/4 bg-white p-4 flex flex-col h-full overflow-y-auto"> 
+      <aside className="sm:w-1/4 w-2/6 bg-white sm:p-4 p-2 flex flex-col h-full overflow-y-auto"> 
         <ChatList onSelectChat={selectChat} />
         <button
           onClick={handleSignOut}
@@ -71,7 +71,7 @@ export default function Home() {
           Sign Out
         </button>
       </aside>
-      <div className="flex flex-col w-3/4">
+      <div className="flex flex-col sm:w-3/4 w-4/6">
         <div className="bg-white">
           <h2 className="text-lg font-bold p-3">{currentChatName}</h2> 
         </div>
@@ -86,7 +86,7 @@ export default function Home() {
             </div>
           )}
         </main>
-        <div className="fixed bottom-0 right-0 w-3/4 h-20 bg-white"> 
+        <div className="fixed bottom-0 right-0 sm:w-3/4 w-4/6 h-20 bg-white"> 
           <div>
             {currentChatId && <MessageInput chatId={currentChatId} />} 
           </div>

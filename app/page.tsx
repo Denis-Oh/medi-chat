@@ -53,8 +53,8 @@ export default function Authentication() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 text-black">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white shadow-md rounded-xl">
-        <h4 className="text-center text-2xl font-bold">MediChat</h4>
+      <div className="w-full max-w-md p-8 space-y-6 mx-2 bg-white shadow-md rounded-xl">
+        <h4 className="text-center text-3xl font-extralight">MediChat</h4>
         <h2 className="text-center text-xl font-medium">{isSignUp ? 'Sign Up' : 'Sign In'}</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {isSignUp && (

@@ -77,18 +77,20 @@ const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
 
   return (
     <div className="border-r border-gray-300 text-black">
-      <form className="p-4" onSubmit={handleNewContact}>
+      <h1 className="font-extralight text-xl pt-2 pb-5">MediChat</h1>
+      <h4 className="font-semibold pb-1">New chat:</h4>
+      <form className="sm:pb-4 pb-2 pr-2" onSubmit={handleNewContact}>
         <input
           type="text"
           value={newContactEmail}
           onChange={(e) => setNewContactEmail(e.target.value)}
           className="w-full rounded p-1 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="New contact's email"
+          placeholder="email..."
         />
         <button type="submit" className="p-1 text-blue-400 hover:text-blue-600">Start Chat</button>
       </form>
 
-      <h2 className="text-lg font-bold p-4">Chats</h2>
+      <h2 className="text-lg font-bold py-4 pl-2">Chats</h2>
       <ul className="list-none">
         {chats.map((chat) => (
           <li
