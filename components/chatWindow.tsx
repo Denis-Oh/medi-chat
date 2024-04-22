@@ -15,7 +15,7 @@ interface Message {
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
-  const [chatName, setChatName] = useState(''); 
+  // const [chatName, setChatName] = useState(''); 
   const [messages, setMessages] = useState<Message[]>([]); 
 
   const db = getFirestore(); // Firestore instance
@@ -23,25 +23,25 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
 
   useEffect(() => {
     // Fetch the chat name and participants
-    const fetchChatDetails = async () => {
-      const chatDocRef = doc(db, 'chats', chatId); // Reference to chat document
-      const chatDoc = await getDoc(chatDocRef); // Get chat document
+    // const fetchChatDetails = async () => {
+    //   const chatDocRef = doc(db, 'chats', chatId); // Reference to chat document
+    //   const chatDoc = await getDoc(chatDocRef); // Get chat document
 
-      if (chatDoc.exists()) {
-        const participants = chatDoc.data().participants as string[]; // Get the participant user IDs
+    //   if (chatDoc.exists()) {
+    //     const participants = chatDoc.data().participants as string[]; // Get the participant user IDs
 
-        // Fetch usernames of the participants
-        const usernames = await Promise.all(
-          participants.map(async (userId) => {
-            const userDocRef = doc(collection(db, 'users'), userId);
-            const userDoc = await getDoc(userDocRef);
-            return userDoc.exists() ? userDoc.data()?.username || 'Unknown User' : 'Unknown User';
-          })
-        );
+    //     // Fetch usernames of the participants
+    //     const usernames = await Promise.all(
+    //       participants.map(async (userId) => {
+    //         const userDocRef = doc(collection(db, 'users'), userId);
+    //         const userDoc = await getDoc(userDocRef);
+    //         return userDoc.exists() ? userDoc.data()?.username || 'Unknown User' : 'Unknown User';
+    //       })
+    //     );
 
-        setChatName(`Chat with: ${usernames.join(', ')}`); // Format the chat name
-      }
-    };
+    //     setChatName(`Chat with: ${usernames.join(', ')}`); // Format the chat name
+    //   }
+    // };
 
     // Fetch chat messages in real-time
     const fetchMessages = () => {
@@ -63,14 +63,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
       });
     };
 
-    fetchChatDetails();
+    // fetchChatDetails();
     fetchMessages(); 
   }, [chatId, db]);
 
   return (
-    <div className="flex-1 p-4 overflow-y-auto">
-      <h2 className="text-lg font-bold">{chatName}</h2> {/* Display the formatted chat name */}
-      <div className="space-y-4">
+    <div className="flex-1 p-4 overflow-y-auto space-y-4">
         {messages.map((msg) => {
           const isCurrentUser = currentUser && msg.sender === currentUser.uid;
 
@@ -102,7 +100,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
             </div>
           );
         })}
-      </div>
     </div>
   );
 };

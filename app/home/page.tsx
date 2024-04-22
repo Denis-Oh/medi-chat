@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/firebaseConfig';
+import { auth, db } from '@/firebaseConfig';
 import { signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import ChatList from '@/components/chatList';
 import ChatWindow from '@/components/chatWindow';
 import MessageInput from '@/components/messageInput';
@@ -17,6 +18,7 @@ const sendMessage = (chatId: string, message: string) => {
 export default function Home() {
   const router = useRouter();
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const [currentChatName, setCurrentChatName] = useState<string>("");
 
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
@@ -25,6 +27,23 @@ export default function Home() {
       }
     });
   }, [router]);
+
+  useEffect(() => {
+    const fetchChatName = async () => {
+      if (currentChatId) {
+        const chatDocRef = doc(db, 'chats', currentChatId); 
+        const chatDoc = await getDoc(chatDocRef); 
+        
+        if (chatDoc.exists() && chatDoc.data()?.chatName) {
+          setCurrentChatName(chatDoc.data()?.chatName); 
+        } else {
+          setCurrentChatName('Unnamed Chat'); 
+        }
+      }
+    };
+
+    fetchChatName(); // Fetch the chat name when currentChatId changes
+  }, [currentChatId, db]); // Dependency array to rerun when currentChatId changes
 
   const handleSignOut = async () => {
     try {
@@ -42,8 +61,8 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 text-black"> {/* Full height screen */}
-      <aside className="w-1/4 bg-white p-4 flex flex-col h-full overflow-y-auto"> {/* Independent scroll */}
+    <div className="flex h-screen bg-gray-100 text-black"> 
+      <aside className="w-1/4 bg-white p-4 flex flex-col h-full overflow-y-auto"> 
         <ChatList onSelectChat={selectChat} />
         <button
           onClick={handleSignOut}
@@ -53,7 +72,10 @@ export default function Home() {
         </button>
       </aside>
       <div className="flex flex-col w-3/4">
-        <main className="flex-1 flex flex-col overflow-y-auto pb-20"> {/* Independent scroll */}
+        <div className="bg-white">
+          <h2 className="text-lg font-bold p-3">{currentChatName}</h2> 
+        </div>
+        <main className="flex-1 flex flex-col overflow-y-auto pb-20"> 
           {currentChatId ? (
             <>
               <ChatWindow chatId={currentChatId} />
@@ -64,9 +86,9 @@ export default function Home() {
             </div>
           )}
         </main>
-        <div className="fixed bottom-0 right-0 w-3/4 h-20 bg-white"> {/* Keep MessageInput at the bottom of the screen */}
+        <div className="fixed bottom-0 right-0 w-3/4 h-20 bg-white"> 
           <div>
-            {currentChatId && <MessageInput chatId={currentChatId} />} {/* Fixed position */}
+            {currentChatId && <MessageInput chatId={currentChatId} />} 
           </div>
         </div>
       </div>
